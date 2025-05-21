@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calibrating Time...</title>
+    <title>Assembling Precision...</title>
     <style>
         :root {
-            --brand-primary: #0a2e50; /* Deep blue, adjust to your brand */
-            --brand-secondary: #d4af37; /* Gold accent, adjust */
-            --gear-silver: #c0c0c0;
-            --gear-brass: #b87333;
-            --jewel-red: #e0115f;
-            --hand-color: #f0f0f0; /* Or blued steel: #517186 */
+            --brand-dark-bg: #1a1a1d; /* Very dark, almost black */
+            --brand-accent-gold: #c0a062; /* A softer, more classic gold */
+            --gear-silver-main: #b8b8b8;
+            --gear-silver-highlight: #e0e0e0;
+            --gear-silver-shadow: #909090;
+            --gear-brass-main: #b08d57;
+            --gear-brass-highlight: #d4af37;
+            --gear-brass-shadow: #8c6d40;
+            --jewel-red: #d90429; /* Rich ruby red */
+            --hand-color: #f0f8ff; /* Alice blue - for a crisp hand look */
+            --hand-shadow: rgba(0,0,0,0.4);
         }
 
         body {
@@ -21,22 +26,29 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: var(--brand-primary);
-            background-image: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 70%),
-                              linear-gradient(45deg, #051a2e 25%, transparent 25%, transparent 75%, #051a2e 75%, #051a2e),
-                              linear-gradient(45deg, #051a2e 25%, transparent 25%, transparent 75%, #051a2e 75%, #051a2e);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            background-position: 0 0, 0 0, 20px 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--brand-dark-bg);
+            background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 70%);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden;
             color: var(--hand-color);
         }
 
         .loading-container {
             position: relative;
-            width: 300px; /* Adjust size as needed */
-            height: 300px;
-            /* border: 1px solid var(--brand-secondary); For debugging layout */
+            width: 320px; /* Slightly larger container */
+            height: 320px;
+        }
+
+        .watch-movement-base {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 90%; /* Base plate slightly smaller than container */
+            height: 90%;
+            transform: translate(-50%, -50%);
+            background-color: #2a2a2e; /* Darker plate for gears to sit on */
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 30px rgba(0,0,0,0.3);
         }
 
         .watch-movement {
@@ -45,190 +57,251 @@
             left: 50%;
             width: 100%;
             height: 100%;
-            transform: translate(-50%, -50%) scale(0.8); /* Scale down a bit */
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+            transform: translate(-50%, -50%);
+            /* filter: drop-shadow(0 0 10px rgba(var(--brand-accent-gold-rgb), 0.2)); */
         }
 
         .gear {
             position: absolute;
             border-radius: 50%;
-            background-image: radial-gradient(circle, #e0e0e0 20%, transparent 21%),
-                              radial-gradient(circle, var(--gear-silver) 80%, #a0a0a0 100%);
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.3), 0 0 8px rgba(0,0,0,0.2);
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Common gear shadow for depth */
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
         }
 
-        .gear::before, .gear::after { /* Spokes illusion */
-            content: '';
+        /* Simulating gear teeth with a repeating gradient */
+        .gear-teeth {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-image:
+                repeating-conic-gradient(
+                    from 0deg,
+                    transparent 0deg 6deg, /* Gap */
+                    currentColor 6deg 12deg  /* Tooth */
+                );
+            animation: inherit; /* Inherit rotation from parent .gear */
+            animation-direction: inherit;
+            mask-image: radial-gradient(circle at center, transparent 65%, black 66%);
+            -webkit-mask-image: radial-gradient(circle at center, transparent 65%, black 66%);
+        }
+
+        /* Central part of the gear */
+        .gear-body {
+            width: 70%; /* Body is smaller than teeth area */
+            height: 70%;
+            border-radius: 50%;
+            position: relative; /* For axle */
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+        }
+
+        /* Axle/hole in the center of the gear */
+        .gear-axle {
+            width: 25%;
+            height: 25%;
+            background-color: #333;
+            border-radius: 50%;
             position: absolute;
-            background-color: rgba(0,0,0,0.1);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
         }
-        .gear::before { width: 15%; height: 100%; }
-        .gear::after { height: 15%; width: 100%; }
 
 
-        .gear-mainspring {
-            width: 100px; height: 100px;
-            top: 50px; left: 50px;
-            background-image: radial-gradient(circle, var(--gear-brass) 60%, #8B4513 90%);
-            animation: rotate-cw 20s linear infinite;
-            z-index: 1;
-        }
-        .gear-mainspring::before, .gear-mainspring::after { background-color: rgba(255,255,255,0.05); }
-
-
-        .gear-center-wheel {
+        /* Specific Gear Styles */
+        .gear-main { /* Largest, slowest gear - often brass */
             width: 120px; height: 120px;
-            top: 90px; left: 90px;
-            background-image: radial-gradient(circle, var(--gear-silver) 70%, #909090 90%);
-            animation: rotate-ccw 18s linear infinite;
+            top: 100px; left: 100px; /* Centered */
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            animation: rotate-cw 30s linear infinite;
+            color: var(--gear-brass-main); /* For teeth */
+        }
+        .gear-main .gear-body { background: radial-gradient(circle, var(--gear-brass-highlight) 0%, var(--gear-brass-main) 60%, var(--gear-brass-shadow) 100%); }
+
+        .gear-secondary { /* Medium silver gear */
+            width: 90px; height: 90px;
+            top: 100px; left: 195px; /* Offset */
+            transform: translate(-50%, -50%);
             z-index: 2;
+            animation: rotate-ccw 18s linear infinite;
+            color: var(--gear-silver-main); /* For teeth */
         }
+        .gear-secondary .gear-body { background: radial-gradient(circle, var(--gear-silver-highlight) 0%, var(--gear-silver-main) 60%, var(--gear-silver-shadow) 100%); }
 
-        .gear-third-wheel {
+        .gear-tertiary { /* Smaller brass gear */
             width: 70px; height: 70px;
-            top: 170px; left: 70px;
-            background-image: radial-gradient(circle, var(--gear-brass) 70%, #8B4513 90%);
-            animation: rotate-cw 10s linear infinite;
+            top: 190px; left: 70px; /* Offset */
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            animation: rotate-cw 12s linear infinite;
+            color: var(--gear-brass-main); /* For teeth */
+        }
+        .gear-tertiary .gear-body { background: radial-gradient(circle, var(--gear-brass-highlight) 0%, var(--gear-brass-main) 60%, var(--gear-brass-shadow) 100%); }
+
+
+        .escape-wheel-container { /* Fast moving, distinct shape often */
+            width: 50px; height: 50px;
+            position: absolute;
+            top: 180px; left: 175px; /* Position of escape wheel */
+            transform: translate(-50%, -50%);
             z-index: 3;
+            animation: rotate-cw 1.5s linear infinite steps(15); /* Steps for more tick-like movement */
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
+        }
+        .escape-wheel { /* Star-like shape for escapement */
+            width: 100%; height: 100%;
+            background-color: var(--brand-accent-gold);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         }
 
-        .gear-fourth-wheel { /* Often drives the second hand */
-            width: 60px; height: 60px;
-            top: 80px; left: 170px;
-            background-image: radial-gradient(circle, var(--gear-silver) 70%, #909090 90%);
-            animation: rotate-ccw 5s linear infinite;
-            z-index: 3;
-        }
-
-        .escape-wheel { /* Fast moving, distinct shape often */
-            width: 40px; height: 40px;
-            top: 130px; left: 200px;
-            background-image: radial-gradient(circle, var(--brand-secondary) 60%, #a37d1c 90%);
-            border-radius: 50%; /* Could make this more star-like with clip-path */
-            animation: rotate-cw 1.5s linear infinite;
+        .balance-wheel-assembly {
+            position:absolute;
+            top: 200px; left: 230px;
+            width: 70px; height: 70px;
+            transform: translate(-50%, -50%);
             z-index: 4;
         }
-        .escape-wheel::before, .escape-wheel::after { display:none; } /* No simple spokes for this one */
-
-
-        .balance-wheel { /* Oscillates, harder to animate simply, so we'll rotate */
-            width: 50px; height: 50px;
-            top: 190px; left: 160px;
-            border: 3px solid var(--gear-silver);
-            background-color: transparent;
-            animation: rotate-cw 0.8s linear infinite; /* Fast, like a balance wheel */
-            z-index: 5;
+        .balance-wheel { /* Oscillates - simplified to rotation */
+            width: 100%; height: 100%;
+            border: 4px solid var(--gear-silver-main);
+            border-top-color: var(--gear-silver-highlight); /* Highlight */
             border-radius: 50%;
-            box-shadow: none;
+            animation: rotate-balance 0.8s linear infinite;
+            box-sizing: border-box;
         }
-         .balance-wheel::before, .balance-wheel::after { display:none; }
+        /* Balance spring (hairspring) - simplified */
+        .balance-spring {
+            position: absolute;
+            width: 60%; height: 60%;
+            top: 20%; left: 20%;
+            border: 2px solid var(--brand-accent-gold);
+            border-radius: 50%;
+            opacity: 0.5;
+            clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%, 50% 0, 50% 20%, 20% 50%, 50% 80%, 80% 50%, 50% 20%); /* Spiral-ish */
+            animation: rotate-balance 0.8s linear infinite reverse; /* Counter-rotate slightly */
+        }
 
 
         .jewel {
             position: absolute;
-            width: 10px; height: 10px;
+            width: 12px; height: 12px;
             background-color: var(--jewel-red);
             border-radius: 50%;
-            box-shadow: inset 0 0 3px rgba(0,0,0,0.5), 0 0 5px var(--jewel-red);
-            z-index: 6;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.6), 0 0 6px var(--jewel-red);
+            z-index: 5;
         }
-        .jewel-1 { top: 95px; left: 95px; }
-        .jewel-2 { top: 190px; left: 85px; }
-        .jewel-3 { top: 95px; left: 190px; }
-        .jewel-4 { top: 145px; left: 215px; } /* Near escape */
-        .jewel-5 { top: 145px; left: 145px; } /* Centerish */
+        /* Position jewels near gear centers or key points */
+        .jewel-1 { top: 94px; left: 94px; }  /* Main gear center */
+        .jewel-2 { top: 94px; left: 189px; } /* Secondary gear center */
+        .jewel-3 { top: 184px; left: 64px; } /* Tertiary gear center */
+        .jewel-4 { top: 176px; left: 171px; } /* Escape wheel area */
+        .jewel-5 { top: 196px; left: 226px; } /* Balance wheel area */
 
-
-        .bridge-plate {
+        /* Bridge plates - simplified for cleaner look */
+        .bridge {
             position: absolute;
-            background-color: rgba(169, 169, 169, 0.7); /* Semi-transparent silver */
-            border-radius: 5px;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-            z-index: 4;
+            background: linear-gradient(135deg, #707070, #505050);
+            border-radius: 8px;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.3), inset 0 0 2px rgba(255,255,255,0.1);
+            z-index: 3; /* Above some gears, below others/jewels */
         }
         .bridge-1 {
-            width: 120px; height: 40px;
-            top: 110px; left: 60px;
-            transform: rotate(-15deg);
-            clip-path: polygon(0% 0%, 100% 20%, 90% 100%, 10% 80%);
+            width: 150px; height: 50px;
+            top: 130px; left: 50px;
+            transform: rotate(-10deg);
+            clip-path: ellipse(50% 40% at 50% 50%);
         }
-         .bridge-2 {
-            width: 90px; height: 30px;
-            top: 150px; left: 150px;
-            transform: rotate(20deg);
-             clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+        .bridge-2 {
+            width: 100px; height: 40px;
+            top: 70px; left: 150px;
+            transform: rotate(15deg);
+            clip-path: inset(0 10px 0 10px round 8px); /* Rounded ends */
         }
 
+
+        .hand-pivot {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100%; height: 100%;
+            transform: translate(-50%, -50%); /* Center within movement container */
+            z-index: 10; /* Hands on top */
+        }
 
         .hand {
             position: absolute;
             background-color: var(--hand-color);
-            bottom: 50%; /* Pivot from center bottom */
-            left: 50%;   /* Center horizontally */
+            bottom: 50%;
+            left: 50%;
             transform-origin: bottom center;
-            border-radius: 2px 2px 0 0;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            z-index: 10;
+            border-radius: 3px 3px 0 0; /* Slightly rounded top */
+            box-shadow: 0 -1px 5px var(--hand-shadow);
         }
 
         .hour-hand {
-            width: 6px; height: 25%;
-            margin-left: -3px; /* Half of width */
+            width: 8px; height: 28%; /* Thicker, shorter */
+            margin-left: -4px;
             animation: rotate-cw 43200s linear infinite; /* 12 hours */
         }
 
         .minute-hand {
-            width: 4px; height: 35%;
-            margin-left: -2px; /* Half of width */
+            width: 6px; height: 38%;
+            margin-left: -3px;
             animation: rotate-cw 3600s linear infinite; /* 60 minutes */
         }
 
         .second-hand {
-            width: 2px; height: 40%;
-            margin-left: -1px; /* Half of width */
-            background-color: var(--brand-secondary); /* Make it stand out */
-            animation: rotate-cw 60s linear infinite; /* 60 seconds */
+            width: 3px; height: 42%;
+            margin-left: -1.5px;
+            background-color: var(--brand-accent-gold); /* Accent color */
+            animation: rotate-cw 60s linear infinite;
         }
-        .second-hand::after { /* Counterweight for second hand */
+        .second-hand::after { /* Counterweight */
             content: '';
             position: absolute;
-            width: 8px; height: 8px;
-            background-color: var(--brand-secondary);
+            width: 10px; height: 10px;
+            background-color: var(--brand-accent-gold);
             border-radius: 50%;
-            bottom: -4px; left: 50%;
+            bottom: -5px; left: 50%;
             transform: translateX(-50%);
+            box-shadow: 0 0 3px var(--hand-shadow);
         }
 
-        .center-cap { /* Covers the hand pivots */
+        .center-cap {
             position: absolute;
-            width: 15px; height: 15px;
-            background-color: var(--gear-silver);
+            width: 18px; height: 18px;
+            background: radial-gradient(circle, var(--gear-silver-highlight) 20%, var(--gear-silver-main) 80%);
             border-radius: 50%;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: inset 0 0 3px rgba(0,0,0,0.4);
-            z-index: 11;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.3);
+            z-index: 11; /* Above hand bases */
         }
 
         .loading-text-container {
-            margin-top: 40px; /* Space below the watch */
-            height: 30px; /* Fixed height to prevent layout shift */
+            margin-top: 50px;
+            height: 30px;
             text-align: center;
         }
 
         .loading-text {
-            font-size: 1.2em;
-            letter-spacing: 1px;
-            color: var(--brand-secondary);
+            font-size: 1.3em;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--brand-accent-gold);
             opacity: 0;
-            animation: fade-cycle-text 9s infinite; /* 3s per message * 3 messages */
+            position: absolute; /* Allows them to occupy same space for fade */
+            left: 50%;
+            transform: translateX(-50%);
+            animation: fade-cycle-text 10s infinite ease-in-out;
         }
         .loading-text:nth-child(1) { animation-delay: 0s; }
-        .loading-text:nth-child(2) { animation-delay: 3s; }
-        .loading-text:nth-child(3) { animation-delay: 6s; }
+        .loading-text:nth-child(2) { animation-delay: 3.33s; }
+        .loading-text:nth-child(3) { animation-delay: 6.66s; }
 
 
         @keyframes rotate-cw {
@@ -239,20 +312,16 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(-360deg); }
         }
+        @keyframes rotate-balance { /* For more of an oscillation feel */
+            0% { transform: rotate(-20deg); }
+            50% { transform: rotate(20deg); }
+            100% { transform: rotate(-20deg); }
+        }
 
         @keyframes fade-cycle-text {
-            0%, 100% { opacity: 0; transform: translateY(10px); }
-            10%, 23% { opacity: 1; transform: translateY(0px); } /* 10% to appear, 23% to disappear (total 33% visibility per message) */
-            33% { opacity: 0; transform: translateY(-10px); }
-        }
-
-        /* Optional: Subtle pulse on the whole movement */
-        .watch-movement {
-             animation: pulse-movement 2s infinite ease-in-out;
-        }
-        @keyframes pulse-movement {
-            0%, 100% { transform: translate(-50%, -50%) scale(0.78); }
-            50% { transform: translate(-50%, -50%) scale(0.8); }
+            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(15px); }
+            8%, 25% { opacity: 1; transform: translateX(-50%) translateY(0px); }
+            33% { opacity: 0; transform: translateX(-50%) translateY(-15px); }
         }
 
     </style>
@@ -260,64 +329,57 @@
 <body>
 
     <div class="loading-container">
+        <div class="watch-movement-base"></div>
         <div class="watch-movement">
-            <!-- Gears - order for z-index layering and appearance -->
-            <div class="gear gear-mainspring"></div>
-            <div class="gear gear-center-wheel"></div>
-            <div class="gear gear-third-wheel"></div>
-            <div class="gear gear-fourth-wheel"></div>
-            <div class="escape-wheel"></div>
-            <div class="balance-wheel"></div>
+            <!-- Gears: Place larger/background gears first -->
+            <div class="gear gear-main">
+                <div class="gear-teeth"></div>
+                <div class="gear-body"><div class="gear-axle"></div></div>
+            </div>
+            <div class="gear gear-secondary">
+                <div class="gear-teeth"></div>
+                <div class="gear-body"><div class="gear-axle"></div></div>
+            </div>
+            <div class="gear gear-tertiary">
+                <div class="gear-teeth"></div>
+                <div class="gear-body"><div class="gear-axle"></div></div>
+            </div>
 
+            <!-- Bridges/Plates -->
+            <div class="bridge bridge-1"></div>
+            <div class="bridge bridge-2"></div>
 
-            <!-- Bridges/Plates - visually sit on top of some gears -->
-            <div class="bridge-plate bridge-1"></div>
-            <div class="bridge-plate bridge-2"></div>
+            <!-- Smaller, faster components -->
+            <div class="escape-wheel-container">
+                <div class="escape-wheel"></div>
+            </div>
+            <div class="balance-wheel-assembly">
+                <div class="balance-spring"></div>
+                <div class="balance-wheel"></div>
+            </div>
 
-            <!-- Jewels - decorative bearings -->
+            <!-- Jewels -->
             <div class="jewel jewel-1"></div>
             <div class="jewel jewel-2"></div>
             <div class="jewel jewel-3"></div>
             <div class="jewel jewel-4"></div>
             <div class="jewel jewel-5"></div>
 
-
-            <!-- Hands -->
-            <div class="hand hour-hand"></div>
-            <div class="hand minute-hand"></div>
-            <div class="hand second-hand"></div>
-            <div class="center-cap"></div>
+            <!-- Hands and Center Cap -->
+            <div class="hand-pivot">
+                <div class="hand hour-hand"></div>
+                <div class="hand minute-hand"></div>
+                <div class="hand second-hand"></div>
+                <div class="center-cap"></div>
+            </div>
         </div>
     </div>
 
     <div class="loading-text-container">
-        <p class="loading-text">Winding Mainspring...</p>
-        <p class="loading-text">Calibrating Escapement...</p>
-        <p class="loading-text">Synchronizing Time...</p>
+        <p class="loading-text">Crafting Time...</p>
+        <p class="loading-text">Assembling Precision...</p>
+        <p class="loading-text">Final Polish...</p>
     </div>
-
-    <script>
-        // Optional: You could dynamically set the hand positions on load
-        // to the current time, but for a loader, continuous animation is fine.
-        // Example:
-        // const now = new Date();
-        // const seconds = now.getSeconds();
-        // const minutes = now.getMinutes();
-        // const hours = now.getHours();
-        //
-        // const secondHand = document.querySelector('.second-hand');
-        // const minuteHand = document.querySelector('.minute-hand');
-        // const hourHand = document.querySelector('.hour-hand');
-        //
-        // const secondDeg = (seconds / 60) * 360 + 90; // +90 if hands start at 12
-        // const minuteDeg = (minutes / 60) * 360 + (seconds/60)*6 + 90;
-        // const hourDeg = (hours / 12) * 360 + (minutes/60)*30 + 90;
-        //
-        // secondHand.style.transform = `rotate(${secondDeg}deg)`;
-        // minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
-        // hourHand.style.transform = `rotate(${hourDeg}deg)`;
-        // For the loader, CSS animation is simpler and more robust.
-    </script>
 
 </body>
 </html>
