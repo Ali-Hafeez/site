@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calibrating Time...</title>
+    <style>
+        :root {
+            --brand-primary: #0a2e50; /* Deep blue, adjust to your brand */
+            --brand-secondary: #d4af37; /* Gold accent, adjust */
+            --gear-silver: #c0c0c0;
+            --gear-brass: #b87333;
+            --jewel-red: #e0115f;
+            --hand-color: #f0f0f0; /* Or blued steel: #517186 */
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--brand-primary);
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 70%),
+                              linear-gradient(45deg, #051a2e 25%, transparent 25%, transparent 75%, #051a2e 75%, #051a2e),
+                              linear-gradient(45deg, #051a2e 25%, transparent 25%, transparent 75%, #051a2e 75%, #051a2e);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background-position: 0 0, 0 0, 20px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: var(--hand-color);
+        }
+
+        .loading-container {
+            position: relative;
+            width: 300px; /* Adjust size as needed */
+            height: 300px;
+            /* border: 1px solid var(--brand-secondary); For debugging layout */
+        }
+
+        .watch-movement {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%) scale(0.8); /* Scale down a bit */
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+        }
+
+        .gear {
+            position: absolute;
+            border-radius: 50%;
+            background-image: radial-gradient(circle, #e0e0e0 20%, transparent 21%),
+                              radial-gradient(circle, var(--gear-silver) 80%, #a0a0a0 100%);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3), 0 0 8px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gear::before, .gear::after { /* Spokes illusion */
+            content: '';
+            position: absolute;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .gear::before { width: 15%; height: 100%; }
+        .gear::after { height: 15%; width: 100%; }
+
+
+        .gear-mainspring {
+            width: 100px; height: 100px;
+            top: 50px; left: 50px;
+            background-image: radial-gradient(circle, var(--gear-brass) 60%, #8B4513 90%);
+            animation: rotate-cw 20s linear infinite;
+            z-index: 1;
+        }
+        .gear-mainspring::before, .gear-mainspring::after { background-color: rgba(255,255,255,0.05); }
+
+
+        .gear-center-wheel {
+            width: 120px; height: 120px;
+            top: 90px; left: 90px;
+            background-image: radial-gradient(circle, var(--gear-silver) 70%, #909090 90%);
+            animation: rotate-ccw 18s linear infinite;
+            z-index: 2;
+        }
+
+        .gear-third-wheel {
+            width: 70px; height: 70px;
+            top: 170px; left: 70px;
+            background-image: radial-gradient(circle, var(--gear-brass) 70%, #8B4513 90%);
+            animation: rotate-cw 10s linear infinite;
+            z-index: 3;
+        }
+
+        .gear-fourth-wheel { /* Often drives the second hand */
+            width: 60px; height: 60px;
+            top: 80px; left: 170px;
+            background-image: radial-gradient(circle, var(--gear-silver) 70%, #909090 90%);
+            animation: rotate-ccw 5s linear infinite;
+            z-index: 3;
+        }
+
+        .escape-wheel { /* Fast moving, distinct shape often */
+            width: 40px; height: 40px;
+            top: 130px; left: 200px;
+            background-image: radial-gradient(circle, var(--brand-secondary) 60%, #a37d1c 90%);
+            border-radius: 50%; /* Could make this more star-like with clip-path */
+            animation: rotate-cw 1.5s linear infinite;
+            z-index: 4;
+        }
+        .escape-wheel::before, .escape-wheel::after { display:none; } /* No simple spokes for this one */
+
+
+        .balance-wheel { /* Oscillates, harder to animate simply, so we'll rotate */
+            width: 50px; height: 50px;
+            top: 190px; left: 160px;
+            border: 3px solid var(--gear-silver);
+            background-color: transparent;
+            animation: rotate-cw 0.8s linear infinite; /* Fast, like a balance wheel */
+            z-index: 5;
+            border-radius: 50%;
+            box-shadow: none;
+        }
+         .balance-wheel::before, .balance-wheel::after { display:none; }
+
+
+        .jewel {
+            position: absolute;
+            width: 10px; height: 10px;
+            background-color: var(--jewel-red);
+            border-radius: 50%;
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.5), 0 0 5px var(--jewel-red);
+            z-index: 6;
+        }
+        .jewel-1 { top: 95px; left: 95px; }
+        .jewel-2 { top: 190px; left: 85px; }
+        .jewel-3 { top: 95px; left: 190px; }
+        .jewel-4 { top: 145px; left: 215px; } /* Near escape */
+        .jewel-5 { top: 145px; left: 145px; } /* Centerish */
+
+
+        .bridge-plate {
+            position: absolute;
+            background-color: rgba(169, 169, 169, 0.7); /* Semi-transparent silver */
+            border-radius: 5px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            z-index: 4;
+        }
+        .bridge-1 {
+            width: 120px; height: 40px;
+            top: 110px; left: 60px;
+            transform: rotate(-15deg);
+            clip-path: polygon(0% 0%, 100% 20%, 90% 100%, 10% 80%);
+        }
+         .bridge-2 {
+            width: 90px; height: 30px;
+            top: 150px; left: 150px;
+            transform: rotate(20deg);
+             clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+        }
+
+
+        .hand {
+            position: absolute;
+            background-color: var(--hand-color);
+            bottom: 50%; /* Pivot from center bottom */
+            left: 50%;   /* Center horizontally */
+            transform-origin: bottom center;
+            border-radius: 2px 2px 0 0;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .hour-hand {
+            width: 6px; height: 25%;
+            margin-left: -3px; /* Half of width */
+            animation: rotate-cw 43200s linear infinite; /* 12 hours */
+        }
+
+        .minute-hand {
+            width: 4px; height: 35%;
+            margin-left: -2px; /* Half of width */
+            animation: rotate-cw 3600s linear infinite; /* 60 minutes */
+        }
+
+        .second-hand {
+            width: 2px; height: 40%;
+            margin-left: -1px; /* Half of width */
+            background-color: var(--brand-secondary); /* Make it stand out */
+            animation: rotate-cw 60s linear infinite; /* 60 seconds */
+        }
+        .second-hand::after { /* Counterweight for second hand */
+            content: '';
+            position: absolute;
+            width: 8px; height: 8px;
+            background-color: var(--brand-secondary);
+            border-radius: 50%;
+            bottom: -4px; left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .center-cap { /* Covers the hand pivots */
+            position: absolute;
+            width: 15px; height: 15px;
+            background-color: var(--gear-silver);
+            border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.4);
+            z-index: 11;
+        }
+
+        .loading-text-container {
+            margin-top: 40px; /* Space below the watch */
+            height: 30px; /* Fixed height to prevent layout shift */
+            text-align: center;
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            letter-spacing: 1px;
+            color: var(--brand-secondary);
+            opacity: 0;
+            animation: fade-cycle-text 9s infinite; /* 3s per message * 3 messages */
+        }
+        .loading-text:nth-child(1) { animation-delay: 0s; }
+        .loading-text:nth-child(2) { animation-delay: 3s; }
+        .loading-text:nth-child(3) { animation-delay: 6s; }
+
+
+        @keyframes rotate-cw {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes rotate-ccw {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        @keyframes fade-cycle-text {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            10%, 23% { opacity: 1; transform: translateY(0px); } /* 10% to appear, 23% to disappear (total 33% visibility per message) */
+            33% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Optional: Subtle pulse on the whole movement */
+        .watch-movement {
+             animation: pulse-movement 2s infinite ease-in-out;
+        }
+        @keyframes pulse-movement {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.78); }
+            50% { transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="loading-container">
+        <div class="watch-movement">
+            <!-- Gears - order for z-index layering and appearance -->
+            <div class="gear gear-mainspring"></div>
+            <div class="gear gear-center-wheel"></div>
+            <div class="gear gear-third-wheel"></div>
+            <div class="gear gear-fourth-wheel"></div>
+            <div class="escape-wheel"></div>
+            <div class="balance-wheel"></div>
+
+
+            <!-- Bridges/Plates - visually sit on top of some gears -->
+            <div class="bridge-plate bridge-1"></div>
+            <div class="bridge-plate bridge-2"></div>
+
+            <!-- Jewels - decorative bearings -->
+            <div class="jewel jewel-1"></div>
+            <div class="jewel jewel-2"></div>
+            <div class="jewel jewel-3"></div>
+            <div class="jewel jewel-4"></div>
+            <div class="jewel jewel-5"></div>
+
+
+            <!-- Hands -->
+            <div class="hand hour-hand"></div>
+            <div class="hand minute-hand"></div>
+            <div class="hand second-hand"></div>
+            <div class="center-cap"></div>
+        </div>
+    </div>
+
+    <div class="loading-text-container">
+        <p class="loading-text">Winding Mainspring...</p>
+        <p class="loading-text">Calibrating Escapement...</p>
+        <p class="loading-text">Synchronizing Time...</p>
+    </div>
+
+    <script>
+        // Optional: You could dynamically set the hand positions on load
+        // to the current time, but for a loader, continuous animation is fine.
+        // Example:
+        // const now = new Date();
+        // const seconds = now.getSeconds();
+        // const minutes = now.getMinutes();
+        // const hours = now.getHours();
+        //
+        // const secondHand = document.querySelector('.second-hand');
+        // const minuteHand = document.querySelector('.minute-hand');
+        // const hourHand = document.querySelector('.hour-hand');
+        //
+        // const secondDeg = (seconds / 60) * 360 + 90; // +90 if hands start at 12
+        // const minuteDeg = (minutes / 60) * 360 + (seconds/60)*6 + 90;
+        // const hourDeg = (hours / 12) * 360 + (minutes/60)*30 + 90;
+        //
+        // secondHand.style.transform = `rotate(${secondDeg}deg)`;
+        // minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+        // hourHand.style.transform = `rotate(${hourDeg}deg)`;
+        // For the loader, CSS animation is simpler and more robust.
+    </script>
+
+</body>
+</html>
